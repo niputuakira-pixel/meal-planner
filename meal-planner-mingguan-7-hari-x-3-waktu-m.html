@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MealPlan Pro - Jadwal Menu Mingguan</title>
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --primary-light: #d1fae5;
+      --accent: #f59e0b;
+      --accent-light: #fef3c7;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --border-focus: #10b981;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+      --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 84px; /* Space for bottom nav */
+      min-height: 100vh;
+    }
+
+    /* Top App Header */
+    .app-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 2px 5px rgba(16,185,129,0.3);
+    }
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .brand-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .section-header {
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+    .btn-outline {
+      border-color: var(--border);
+    }
+    .btn-outline:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .btn-danger {
+      background: var(--danger-light);
+      color: var(--danger);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+    .btn-danger:hover {
+      background: #fecaca;
+    }
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 0.75rem;
+    }
+
+    /* Toolbar / Quick Actions */
+    .planner-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Week Info Card */
+    .week-info-card {
+      background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+      border: 1px solid var(--primary-light);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .week-info-inputs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      flex: 1;
+    }
+    .input-pill {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .input-pill input {
+      border: none;
+      outline: none;
+      font-size: 0.85rem;
+      color: var(--text);
+      font-weight: 500;
+      background: transparent;
+    }
+
+    /* VIEW SWITCHER */
+    .view-toggle {
+      display: flex;
+      background: var(--bg);
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .view-toggle button {
+      border: none;
+      background: none;
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .view-toggle button.active {
+      background: white;
+      color: var(--primary-dark);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* TABLE VIEW (Rapi, Responsive) */
+    .table-container {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+    .planner-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+      text-align: left;
+    }
+    .planner-table th {
+      background: #f1f5f9;
+      padding: 12px 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      border-bottom: 2px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .planner-table th:last-child {
+      border-right: none;
+    }
+    .planner-table th.meal-col-head {
+      width: 28%;
+    }
+    .planner-table td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      vertical-align: top;
+      background: var(--surface);
+    }
+    .planner-table td:last-child {
+      border-right: none;
+    }
+    .planner-table tr:hover td {
+      background: #fafafa;
+    }
+    .day-badge {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 90px;
+    }
+    .day-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    .day-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--primary-dark);
+      background: var(--primary-light);
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .meal-input-box {
+      position: relative;
+    }
+    .meal-textarea {
+      width: 100%;
+      min-height: 52px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      resize: vertical;
+      background: #fdfdfd;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .meal-textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+    }
+    .meal-textarea::placeholder {
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+
+    /* CARDS VIEW (Mobile friendly) */
+    .cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .day-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .day-card-header {
+      background: #f8fafc;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .day-card-header h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .day-card-body {
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 640px) {
+      .day-card-body {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .card-slot-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-transform: uppercase;
+    }
+
+    /* GROCERY LIST TAB */
+    .grocery-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 768px) {
+      .grocery-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .grocery-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .add-grocery-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .add-grocery-bar input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .add-grocery-bar input:focus {
+      border-color: var(--border-focus);
+    }
+    .grocery-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+    .grocery-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .grocery-item.done {
+      opacity: 0.6;
+      background: #f1f5f9;
+      text-decoration: line-through;
+    }
+    .grocery-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      cursor: pointer;
+    }
+    .grocery-checkbox {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .del-btn {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      padding: 4px 6px;
+      font-size: 0.9rem;
+      border-radius: 4px;
+    }
+    .del-btn:hover {
+      background: var(--danger-light);
+    }
+
+    /* PRESETS MODAL / POPUP */
+    .preset-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .preset-chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .preset-chip:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+
+    /* GUIDE & ABOUT TABS */
+    .info-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .info-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+    .info-card p, .info-card li {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .info-card ul {
+      padding-left: 20px;
+      margin-top: 8px;
+    }
+    .feature-badge {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+
+    /* BOTTOM TAB NAVIGATION (App Bar) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 50;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    }
+    .nav-tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      gap: 3px;
+    }
+    .nav-tab .tab-icon {
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+    .nav-tab.active {
+      color: var(--primary-dark);
+    }
+    .nav-tab.active .tab-icon {
+      transform: translateY(-2px);
+    }
+
+    /* TOAST ALERT */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #1e293b;
+      color: white;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(-15px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* HIDDEN UTILITY */
+    .hidden {
+      display: none !important;
+    }
+
+    /* PRINT STYLING - FULL PRINT PERFECTION */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+        padding-bottom: 0 !important;
+      }
+      .app-header, .bottom-nav, .planner-toolbar, .no-print, .view-toggle, .btn {
+        display: none !important;
+      }
+      .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .tab-section {
+        display: block !important;
+      }
+      #tab-panduan, #tab-tentang, #tab-belanja {
+        display: none !important;
+      }
+      #tab-planner {
+        display: block !important;
+      }
+      .table-container {
+        box-shadow: none !important;
+        border: 1px solid #333 !important;
+        overflow: visible !important;
+      }
+      .planner-table {
+        min-width: 100% !important;
+        font-size: 10pt;
+      }
+      .planner-table th {
+        background: #eee !important;
+        color: black !important;
+        border: 1px solid #333 !important;
+        padding: 6px !important;
+      }
+      .planner-table td {
+        border: 1px solid #333 !important;
+        padding: 6px !important;
+        background: transparent !important;
+      }
+      .meal-textarea {
+        border: none !important;
+        padding: 0 !important;
+        font-size: 9.5pt !important;
+        resize: none !important;
+        height: auto !important;
+        min-height: auto !important;
+        background: transparent !important;
+        color: black !important;
+      }
+      .print-header {
+        display: block !important;
+        margin-bottom: 12px;
+        text-align: center;
+      }
+      .print-header h1 {
+        font-size: 16pt;
+        margin-bottom: 4px;
+      }
+      .print-header p {
+        font-size: 10pt;
+        color: #555;
+      }
+    }
+    .print-header {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast">
+    <span id="toast-msg">Perubahan disimpan</span>
+  </div>
+
+  <!-- APP HEADER -->
+  <header class="app-header">
+    <div class="app-brand">
+      <div class="brand-icon">🥗</div>
+      <div>
+        <h1 class="brand-title">MealPlan Pro</h1>
+        <p class="brand-sub">Menu Sehat 7 Hari Mingguan</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline btn-sm" onclick="printMealPlan()" title="Cetak Rencana Menu">
+        <span>🖨️</span> Cetak / PDF
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="saveManual()" title="Simpan Data">
+        <span>💾</span> Simpan
+      </button>
+    </div>
+  </header>
+
+  <!-- PRINT ONLY HEADER -->
+  <div class="print-header">
+    <h1>🥗 JADWAL MENU MAKAN MINGGUAN</h1>
+    <p id="print-subtitle">Periode: Minggu Ini | Target: Pola Makan Sehat & Teratur</p>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="container">
+
+    <!-- ==============================================
+         TAB 1: JADWAL MAKAN (MEAL PLANNER)
+         ============================================== -->
+    <section id="tab-planner" class="tab-section">
+      <div class="section-header no-print">
+        <h2 class="section-title">📅 Jadwal Menu 7 Hari</h2>
+        <p class="section-desc">Atur menu Sarapan, Makan Siang, dan Makan Malam tiap harinya.</p>
+      </div>
+
+      <!-- Info & Target Bar -->
+      <div class="week-info-card no-print">
+        <div class="week-info-inputs">
+          <div class="input-pill">
+            <span>🏷️ Periode:</span>
+            <input type="text" id="plan-label" placeholder="Contoh: Minggu 1 - Maret" onchange="autoSave()">
+          </div>
+          <div class="input-pill">
+            <span>🎯 Catatan/Fokus:</span>
+            <input type="text" id="plan-goal" placeholder="Contoh: Kurangi gorengan, perbanyak serat" onchange="autoSave()">
+          </div>
+        </div>
+        <div class="view-toggle">
+          <button id="btn-view-table" class="active" onclick="switchView('table')">Tabel</button>
+          <button id="btn-view-cards" onclick="switchView('cards')">Kartu Harian</button>
+        </div>
+      </div>
+
+      <!-- Planner Toolbar -->
+      <div class="planner-toolbar no-print">
+        <div class="toolbar-group">
+          <span style="font-size:0.8rem; font-weight:700; color:var(--text-muted)">Templat Cepat:</span>
+          <button class="btn btn-outline btn-sm" onclick="applyPreset('sehat')">🥗 Diet Sehat</button>
+          <button class="btn btn-outline btn-sm" onclick="applyPreset('nusantara')">🍛 Nusantara</button>
+          <button class="btn btn-outline btn-sm" onclick="applyPreset('hemat')">🍳 Hemat Kos</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="btn btn-danger btn-sm" onclick="confirmResetPlanner()">
+            <span>🗑️</span> Reset Menu
+          </button>
+        </div>
+      </div>
+
+      <!-- 1. VIEW TABEL (Default) -->
+      <div id="view-table-wrapper" class="table-container">
+        <table class="planner-table">
+          <thead>
+            <tr>
+              <th style="width: 14%;">Hari</th>
+              <th class="meal-col-head">🌅 Sarapan (Pagi)</th>
+              <th class="meal-col-head">☀️ Makan Siang</th>
+              <th class="meal-col-head">🌙 Makan Malam</th>
+            </tr>
+          </thead>
+          <tbody id="planner-table-body">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 2. VIEW KARTU (Mobile Accordion / Cards) -->
+      <div id="view-cards-wrapper" class="cards-container hidden">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ==============================================
+         TAB 2: DAFTAR BELANJA (GROCERY)
+         ============================================== -->
+    <section id="tab-belanja" class="tab-section hidden">
+      <div class="section-header">
+        <h2 class="section-title">🛒 Daftar Belanja Bahan</h2>
+        <p class="section-desc">Catat bahan masakan & kebutuhan belanja mingguan agar tidak ada yang terlewat.</p>
+      </div>
+
+      <div class="grocery-grid">
+        <div class="grocery-card">
+          <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
+            <span>Tambah Bahan</span>
+            <span id="grocery-count" style="font-size:0.75rem; color:var(--text-muted); font-weight:normal">0 bahan</span>
+          </h3>
+          <div class="add-grocery-bar">
+            <input type="text" id="grocery-input" placeholder="Ketik nama bahan (cth: Ayam fillet 500g)..." onkeydown="if(event.key==='Enter') addGroceryItem()">
+            <button class="btn btn-primary" onclick="addGroceryItem()">+ Tambah</button>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <button class="btn btn-outline btn-sm" onclick="clearCheckedGroceries()">Bersihkan yang Selesai</button>
+            <button class="btn btn-danger btn-sm" onclick="clearAllGroceries()">Hapus Semua</button>
+          </div>
+
+          <ul id="grocery-list-el" class="grocery-list">
+            <!-- Rendered by JS -->
+          </ul>
+        </div>
+
+        <div class="grocery-card">
+          <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 10px;">💡 Inspirasi Bahan Pokok</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Klik untuk langsung menambahkan ke daftar belanjamu:</p>
+          <div class="preset-chip-list">
+            <span class="preset-chip" onclick="quickAddGrocery('Telur Ayam 1 kg')">+ 🥚 Telur 1 kg</span>
+            <span class="preset-chip" onclick="quickAddGrocery('Dada Ayam 500g')">+ 🍗 Dada Ayam 500g</span>
+            <span class="preset-chip" onclick="quickAddGrocery('Bawang Merah & Putih')">+ 🧄 Bawang M/P</span>
+            <span class="preset-chip" onclick="quickAddGrocery('Minyak Goreng 1L')">+ 🛢️ Minyak Goreng</span>
+            <span class="preset-chip" onclick="quickAddGrocery('Bayam & Kangkung')">+ 🥬 Sayur Hijau</span>
+            <span class="preset-chip" onclick="quickAddGrocery('Tahu & Tempe')">+ 🧈 Tahu & Tempe</span>
+            <span class="preset-chip" onclick="quickAddGrocery('Beras 5 kg')">+ 🍚 Beras 5 kg</span>
+            <span class="preset-chip" onclick="quickAddGrocery('Tomat & Cabai')">+ 🌶️ Cabai & Tomat</span>
+            <span class="preset-chip" onclick="quickAddGrocery('Susu UHT')">+ 🥛 Susu UHT</span>
+            <span class="preset-chip" onclick="quickAddGrocery('Oatmeal / Roti')">+ 🍞 Roti / Oat</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         TAB 3: PANDUAN CARA PAKAI
+         ============================================== -->
+    <section id="tab-panduan" class="tab-section hidden">
+      <div class="section-header">
+        <h2 class="section-title">📖 Panduan & Tips Meal Prep</h2>
+        <p class="section-desc">Cara praktis menyusun dan menjalankan rencana makan mingguan.</p>
+      </div>
+
+      <div class="info-card">
+        <span class="feature-badge">Langkah Mudah</span>
+        <h3>1. Cara Mengisi Jadwal</h3>
+        <ul>
+          <li><strong>Tulis Menu:</strong> Ketik hidangan yang ingin dimakan pada kotak Sarapan, Makan Siang, dan Makan Malam untuk hari Senin s/d Minggu.</li>
+          <li><strong>Gunakan Templat:</strong> Mau cepat? Klik tombol templat (Diet Sehat, Nusantara, atau Hemat Kos) pada toolbar untuk mengisi otomatis sebagai inspirasi awal.</li>
+          <li><strong>Auto-Save:</strong> Semua teks otomatis tersimpan di peramban (browser) kamu tanpa perlu repot.</li>
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <span class="feature-badge">Cetak & Tempel</span>
+        <h3>2. Mencetak Rencana Menu</h3>
+        <ul>
+          <li>Klik tombol <strong>"Cetak / PDF"</strong> di pojok kanan atas.</li>
+          <li>Di jendela printer, pilih opsi "Save as PDF" untuk menyimpan dokumen atau cetak di kertas A4.</li>
+          <li>Tempelkan jadwal cetak di pintu kulkas untuk referensi seluruh keluarga!</li>
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <span class="feature-badge">Tips Ahli</span>
+        <h3>3. Tips Sukses "Meal Prep" Mingguan</h3>
+        <ul>
+          <li><strong>Belanja Sekaligus:</strong> Catat semua bahan di tab "Belanja" dan belanja pada hari Sabtu/Minggu.</li>
+          <li><strong>Batch Cooking:</strong> Ungkep ayam, rebus telur, atau potong sayuran dan simpan di wadah kedap udara (food preparation) untuk 3-4 hari ke depan.</li>
+          <li><strong>Fleksibilitas:</strong> Tukar hari makan jika ada agenda mendadak di luar rumah tanpa rasa bersalah.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         TAB 4: TENTANG & PENGATURAN
+         ============================================== -->
+    <section id="tab-tentang" class="tab-section hidden">
+      <div class="section-header">
+        <h2 class="section-title">ℹ️ Tentang MealPlan Pro</h2>
+        <p class="section-desc">Aplikasi web mandiri untuk pengelolaan nutrisi & meal prep pribadi.</p>
+      </div>
+
+      <div class="info-card">
+        <h3>🛡️ Privasi & Penyimpanan Lokal</h3>
+        <p>Aplikasi ini 100% <strong>Offline-First</strong>. Semua menu dan daftar belanja disimpan langsung di memori perangkat kamu (localStorage). Tidak ada data yang dikirim ke server luar.</p>
+      </div>
+
+      <div class="info-card">
+        <h3>💾 Ekspor & Impor Data (Cadangan)</h3>
+        <p style="margin-bottom:12px">Simpan cadangan data meal planner kamu sebagai file teks/JSON atau pulihkan data lama:</p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <button class="btn btn-outline" onclick="exportDataJSON()">📥 Ekspor Data (JSON)</button>
+          <button class="btn btn-outline" onclick="document.getElementById('import-file-input').click()">📤 Impor Data</button>
+          <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="importDataJSON(event)">
+        </div>
+      </div>
+
+      <div class="info-card" style="border-color: var(--danger-light);">
+        <h3 style="color: var(--danger);">⚠️ Reset Total Data</h3>
+        <p style="margin-bottom: 12px;">Hapus seluruh data meal plan dan daftar belanjaan yang tersimpan di perangkat ini.</p>
+        <button class="btn btn-danger" onclick="resetAllAppData()">Bersihkan Semua Data Aplikasi</button>
+      </div>
+
+      <div style="text-align:center; padding: 20px 0; color: var(--text-muted); font-size: 0.8rem;">
+        <p><strong>MealPlan Pro</strong> &bull; Versi 1.0.0</p>
+        <p style="margin-top:4px">Dirancang untuk hidup lebih sehat, hemat, & teratur.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" onclick="navigateTab('tab-planner', this)">
+      <span class="tab-icon">📅</span>
+      <span>Jadwal</span>
+    </button>
+    <button class="nav-tab" onclick="navigateTab('tab-belanja', this)">
+      <span class="tab-icon">🛒</span>
+      <span>Belanja</span>
+    </button>
+    <button class="nav-tab" onclick="navigateTab('tab-panduan', this)">
+      <span class="tab-icon">📖</span>
+      <span>Panduan</span>
+    </button>
+    <button class="nav-tab" onclick="navigateTab('tab-tentang', this)">
+      <span class="tab-icon">ℹ️</span>
+      <span>Tentang</span>
+    </button>
+  </nav>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // --- KONFIGURASI HARI & WAKTU MAKAN ---
+    const DAYS = [
+      { id: 'senin', name: 'Senin', tag: 'Awal Pekan' },
+      { id: 'selasa', name: 'Selasa', tag: 'Hari 2' },
+      { id: 'rabu', name: 'Rabu', tag: 'Tengah Pekan' },
+      { id: 'kamis', name: 'Kamis', tag: 'Hari 4' },
+      { id: 'jumat', name: 'Jumat', tag: 'Menuju Libur' },
+      { id: 'sabtu', name: 'Sabtu', tag: 'Akhir Pekan' },
+      { id: 'minggu', name: 'Minggu', tag: 'Persiapan' }
+    ];
+
+    const MEALS = [
+      { key: 'breakfast', label: 'Sarapan', icon: '🌅' },
+      { key: 'lunch', label: 'Makan Siang', icon: '☀️' },
+      { key: 'dinner', label: 'Makan Malam', icon: '🌙' }
+    ];
+
+    // --- PRESET TEMPLATES ---
+    const PRESETS = {
+      sehat: {
+        senin: { breakfast: 'Oatmeal buah berry + biji chia', lunch: 'Dada ayam panggang + nasi merah + brokoli', dinner: 'Salad sayur telur rebus + minyak zaitun' },
+        selasa: { breakfast: 'Omelet bayam & tomat + roti gandum', lunch: 'Ikan kembung bakar + tumis buncis + nasi merah', dinner: 'Sup ayam bening sayuran' },
+        rabu: { breakfast: 'Smoothie alpukat pisang + susu almond', lunch: 'Pepes tahu jamur + sayur asem + nasi merah', dinner: 'Tumis daging sapi paprika + selada' },
+        kamis: { breakfast: 'Telur orak-arik alpukat + roti gandum', lunch: 'Salmon/tenggiri panggang + kentang rebus', dinner: 'Capcay kuah tahu sutra' },
+        jumat: { breakfast: 'Overnight oat apel kayu manis', lunch: 'Ayam kukus jahe + tumis pokcoy', dinner: 'Sup jagung wortel telur puyuh' },
+        sabtu: { breakfast: 'Pancake oat pisang (tanpa gula)', lunch: 'Gado-gado lontong sedikit + telur', dinner: 'Ikan dori fillet panggang lemon' },
+        minggu: { breakfast: 'Jus hijau + telur mata sapi setengah matang', lunch: 'Sup iga kuah bening + wortel kentang', dinner: 'Salad dada ayam suwir + edamame' }
+      },
+      nusantara: {
+        senin: { breakfast: 'Nasi uduk telur balado + bihun', lunch: 'Ayam goreng kremes + sayur lodeh + nasi putih', dinner: 'Nasi goreng kampung + timun' },
+        selasa: { breakfast: 'Bubur ayam komplet cakwe', lunch: 'Rendang sapi + daun singkong + sambal ijo', dinner: 'Soto ayam lamongan koya' },
+        rabu: { breakfast: 'Lontong sayur labu siam', lunch: 'Ikan nila bakar bumbu kecap + lalapan', dinner: 'Mie godog jawa suwir ayam' },
+        kamis: { breakfast: 'Nasi kuning abon + serundeng', lunch: 'Rawon daging sapi + telur asin + toge', dinner: 'Tahu tempe bacem + sayur bening bayam' },
+        jumat: { breakfast: 'Roti bakar srikaya + telur setengah matang', lunch: 'Gulai kakap + tumis kangkung terasi', dinner: 'Nasi gila sosis bakso pedas' },
+        sabtu: { breakfast: 'Kupat tahu bumbu kacang', lunch: 'Ayam bakar taliwang + plecing kangkung', dinner: 'Sate ayam madura lontong' },
+        minggu: { breakfast: 'Nasi pecel madiun rempeyek', lunch: 'Sop buntut sapi rempah kuah hangat', dinner: 'Bakso sapi kuah kaldu komplit' }
+      },
+      hemat: {
+        senin: { breakfast: 'Nasi putih + telur ceplok kecap bawang', lunch: 'Tempe orek basah + tumis buncis', dinner: 'Mie instan rebus + telur + sawi' },
+        selasa: { breakfast: 'Roti tawar selai kacang/cokelat', lunch: 'Tahu goreng krispi + sayur sop bakso', dinner: 'Nasi + sarden kaleng tomat' },
+        rabu: { breakfast: 'Nasi uduk bungkusan dekat kos', lunch: 'Telur dadar padang tebal + tumis toge', dinner: 'Nasi goreng telur orak-arik' },
+        kamis: { breakfast: 'Bubur kacang hijau instan / oat', lunch: 'Ayam geprek hemat + timun', dinner: 'Tumis tempe kacang panjang + telur mata sapi' },
+        jumat: { breakfast: 'Roti bakar margarin gula + teh manis', lunch: 'Pecel lele goreng sambal tomat', dinner: 'Nasi telur kornet pedas' },
+        sabtu: { breakfast: 'Lontong sayur warung kos', lunch: 'Soto ayam kuah kuning kantin', dinner: 'Martabak telur mini homemade' },
+        minggu: { breakfast: 'Nasi kuning porsi mini', lunch: 'Tahu tempe penyet sambal bawang', dinner: 'Mie goreng telur + kol' }
+      }
+    };
+
+    // --- APP STATE ---
+    let plannerData = {};
+    let groceryData = [];
+    let metaData = { label: '', goal: '' };
+
+    // --- STORAGE KEYS ---
+    const STORAGE_KEY_PLAN = 'mealplan_pro_data_v1';
+    const STORAGE_KEY_GROCERY = 'mealplan_pro_groceries_v1';
+    const STORAGE_KEY_META = 'mealplan_pro_meta_v1';
+
+    // --- INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStorageData();
+      renderPlannerTable();
+      renderPlannerCards();
+      renderGroceries();
+    });
+
+    // --- LOAD & SAVE WITH LOCALSTORAGE SAFE WRAPPER ---
+    function loadStorageData() {
+      try {
+        const savedPlan = localStorage.getItem(STORAGE_KEY_PLAN);
+        if (savedPlan) {
+          plannerData = JSON.parse(savedPlan);
+        } else {
+          // Initialize empty structure
+          initEmptyPlan();
+        }
+
+        const savedGrocery = localStorage.getItem(STORAGE_KEY_GROCERY);
+        if (savedGrocery) {
+          groceryData = JSON.parse(savedGrocery);
+        } else {
+          groceryData = [
+            { id: 1, text: 'Telur Ayam 1 kg', checked: false },
+            { id: 2, text: 'Bawang Merah & Putih', checked: true },
+            { id: 3, text: 'Sayur Bayam 2 ikat', checked: false }
+          ];
+        }
+
+        const savedMeta = localStorage.getItem(STORAGE_KEY_META);
+        if (savedMeta) {
+          metaData = JSON.parse(savedMeta);
+          document.getElementById('plan-label').value = metaData.label || '';
+          document.getElementById('plan-goal').value = metaData.goal || '';
+        }
+      } catch (err) {
+        console.warn('Gagal membaca localStorage (mode private mungkin aktif):', err);
+        initEmptyPlan();
+      }
+    }
+
+    function initEmptyPlan() {
+      plannerData = {};
+      DAYS.forEach(d => {
+        plannerData[d.id] = { breakfast: '', lunch: '', dinner: '' };
+      });
+    }
+
+    function autoSave() {
+      try {
+        metaData.label = document.getElementById('plan-label').value;
+        metaData.goal = document.getElementById('plan-goal').value;
+
+        localStorage.setItem(STORAGE_KEY_PLAN, JSON.stringify(plannerData));
+        localStorage.setItem(STORAGE_KEY_GROCERY, JSON.stringify(groceryData));
+        localStorage.setItem(STORAGE_KEY_META, JSON.stringify(metaData));
+
+        // Update print subtitle
+        const sub = document.getElementById('print-subtitle');
+        if (sub) {
+          sub.textContent = `Periode: ${metaData.label || 'Minggu Ini'} | Catatan: ${metaData.goal || 'Pola Makan Sehat & Teratur'}`;
+        }
+      } catch (e) {
+        console.warn('Gagal menyimpan ke localStorage:', e);
+      }
+    }
+
+    function saveManual() {
+      autoSave();
+      showToast('✅ Semua data menu & belanja tersimpan!');
+    }
+
+    // --- RENDER TABLE VIEW ---
+    function renderPlannerTable() {
+      const tbody = document.getElementById('planner-table-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+
+      DAYS.forEach(day => {
+        const tr = document.createElement('tr');
+        const dayData = plannerData[day.id] || { breakfast: '', lunch: '', dinner: '' };
+
+        tr.innerHTML = `
+          <td>
+            <div class="day-badge">
+              <span class="day-name">${day.name}</span>
+              <span class="day-tag">${day.tag}</span>
+            </div>
+          </td>
+          <td>
+            <div class="meal-input-box">
+              <textarea class="meal-textarea" data-day="${day.id}" data-meal="breakfast" placeholder="Tulis sarapan..." oninput="onMealInput(this)">${escapeHtml(dayData.breakfast || '')}</textarea>
+            </div>
+          </td>
+          <td>
+            <div class="meal-input-box">
+              <textarea class="meal-textarea" data-day="${day.id}" data-meal="lunch" placeholder="Tulis makan siang..." oninput="onMealInput(this)">${escapeHtml(dayData.lunch || '')}</textarea>
+            </div>
+          </td>
+          <td>
+            <div class="meal-input-box">
+              <textarea class="meal-textarea" data-day="${day.id}" data-meal="dinner" placeholder="Tulis makan malam..." oninput="onMealInput(this)">${escapeHtml(dayData.dinner || '')}</textarea>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- RENDER CARDS VIEW ---
+    function renderPlannerCards() {
+      const container = document.getElementById('view-cards-wrapper');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      DAYS.forEach(day => {
+        const dayData = plannerData[day.id] || { breakfast: '', lunch: '', dinner: '' };
+        const card = document.createElement('div');
+        card.className = 'day-card';
+        card.innerHTML = `
+          <div class="day-card-header">
+            <h3>📅 ${day.name}</h3>
+            <span class="day-tag">${day.tag}</span>
+          </div>
+          <div class="day-card-body">
+            <div>
+              <div class="card-slot-label">🌅 Sarapan</div>
+              <textarea class="meal-textarea" data-day="${day.id}" data-meal="breakfast" placeholder="Menu sarapan..." oninput="onMealInput(this)">${escapeHtml(dayData.breakfast || '')}</textarea>
+            </div>
+            <div>
+              <div class="card-slot-label">☀️ Makan Siang</div>
+              <textarea class="meal-textarea" data-day="${day.id}" data-meal="lunch" placeholder="Menu makan siang..." oninput="onMealInput(this)">${escapeHtml(dayData.lunch || '')}</textarea>
+            </div>
+            <div>
+              <div class="card-slot-label">🌙 Makan Malam</div>
+              <textarea class="meal-textarea" data-day="${day.id}" data-meal="dinner" placeholder="Menu makan malam..." oninput="onMealInput(this)">${escapeHtml(dayData.dinner || '')}</textarea>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // --- EVENT LISTENER INPUT HANDLER ---
+    function onMealInput(textarea) {
+      const day = textarea.dataset.day;
+      const meal = textarea.dataset.meal;
+      const val = textarea.value;
+
+      if (!plannerData[day]) plannerData[day] = {};
+      plannerData[day][meal] = val;
+
+      // Sync the other view inputs so they stay updated
+      const allMatching = document.querySelectorAll(`textarea[data-day="${day}"][data-meal="${meal}"]`);
+      allMatching.forEach(el => {
+        if (el !== textarea) el.value = val;
+      });
+
+      autoSave();
+    }
+
+    // --- VIEW SWITCHER (TABEL / KARTU) ---
+    function switchView(view) {
+      const tableWrapper = document.getElementById('view-table-wrapper');
+      const cardsWrapper = document.getElementById('view-cards-wrapper');
+      const btnTable = document.getElementById('btn-view-table');
+      const btnCards = document.getElementById('btn-view-cards');
+
+      if (view === 'table') {
+        tableWrapper.classList.remove('hidden');
+        cardsWrapper.classList.add('hidden');
+        btnTable.classList.add('active');
+        btnCards.classList.remove('active');
+      } else {
+        tableWrapper.classList.add('hidden');
+        cardsWrapper.classList.remove('hidden');
+        btnCards.classList.add('active');
+        btnTable.classList.remove('active');
+      }
+    }
+
+    // --- PRESET APPLICATION ---
+    function applyPreset(presetKey) {
+      if (!PRESETS[presetKey]) return;
+      if (!confirm(`Terapkan templat menu "${presetKey.toUpperCase()}"? Menu yang ada akan diganti.`)) {
+        return;
+      }
+
+      const template = PRESETS[presetKey];
+      DAYS.forEach(day => {
+        plannerData[day.id] = { ...template[day.id] };
+      });
+
+      renderPlannerTable();
+      renderPlannerCards();
+      autoSave();
+      showToast(`✨ Berhasil menerapkan templat ${presetKey}!`);
+    }
+
+    // --- RESET PLANNER ---
+    function confirmResetPlanner() {
+      if (confirm('Yakin ingin mengosongkan semua menu makan 7 hari?')) {
+        initEmptyPlan();
+        renderPlannerTable();
+        renderPlannerCards();
+        autoSave();
+        showToast('🗑️ Jadwal menu telah dikosongkan.');
+      }
+    }
+
+    // --- GROCERY LIST LOGIC ---
+    function renderGroceries() {
+      const listEl = document.getElementById('grocery-list-el');
+      const countEl = document.getElementById('grocery-count');
+      if (!listEl) return;
+
+      listEl.innerHTML = '';
+      countEl.textContent = `${groceryData.length} item`;
+
+      if (groceryData.length === 0) {
+        listEl.innerHTML = `
+          <li style="text-align:center; padding: 24px 10px; color: var(--text-muted); font-size: 0.85rem;">
+            Daftar belanja masih kosong.<br>Tambahkan bahan dari input di atas!
+          </li>
+        `;
+        return;
+      }
+
+      groceryData.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.className = `grocery-item ${item.checked ? 'done' : ''}`;
+        li.innerHTML = `
+          <div class="grocery-left" onclick="toggleGrocery(${index})">
+            <input type="checkbox" class="grocery-checkbox" ${item.checked ? 'checked' : ''} onclick="event.stopPropagation(); toggleGrocery(${index})">
+            <span style="font-size: 0.9rem; font-weight: 500;">${escapeHtml(item.text)}</span>
+          </div>
+          <button class="del-btn" onclick="deleteGrocery(${index})" title="Hapus">✕</button>
+        `;
+        listEl.appendChild(li);
+      });
+    }
+
+    function addGroceryItem() {
+      const input = document.getElementById('grocery-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      groceryData.push({
+        id: Date.now(),
+        text: text,
+        checked: false
+      });
+
+      input.value = '';
+      renderGroceries();
+      autoSave();
+      showToast('🛒 Bahan ditambahkan ke daftar');
+    }
+
+    function quickAddGrocery(itemText) {
+      groceryData.push({
+        id: Date.now(),
+        text: itemText,
+        checked: false
+      });
+      renderGroceries();
+      autoSave();
+      showToast(`+ Ditambahkan: ${itemText}`);
+    }
+
+    function toggleGrocery(index) {
+      if (groceryData[index]) {
+        groceryData[index].checked = !groceryData[index].checked;
+        renderGroceries();
+        autoSave();
+      }
+    }
+
+    function deleteGrocery(index) {
+      groceryData.splice(index, 1);
+      renderGroceries();
+      autoSave();
+    }
+
+    function clearCheckedGroceries() {
+      const initialCount = groceryData.length;
+      groceryData = groceryData.filter(item => !item.checked);
+      renderGroceries();
+      autoSave();
+      showToast(`Dibersihkan (${initialCount - groceryData.length} item selesai)`);
+    }
+
+    function clearAllGroceries() {
+      if (groceryData.length === 0) return;
+      if (confirm('Hapus seluruh daftar belanja?')) {
+        groceryData = [];
+        renderGroceries();
+        autoSave();
+        showToast('Daftar belanja dikosongkan.');
+      }
+    }
+
+    // --- BOTTOM TAB NAVIGATION ---
+    function navigateTab(sectionId, tabButton) {
+      // Hide all sections
+      document.querySelectorAll('.tab-section').forEach(sec => {
+        sec.classList.add('hidden');
+      });
+
+      // Show selected section
+      const activeSection = document.getElementById(sectionId);
+      if (activeSection) {
+        activeSection.classList.remove('hidden');
+      }
+
+      // Update Nav active classes
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      if (tabButton) {
+        tabButton.classList.add('active');
+      }
+
+      // Scroll smoothly to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // --- PRINT HANDLER ---
+    function printMealPlan() {
+      // Make sure we are on Planner tab & table view for clean printing
+      navigateTab('tab-planner', document.querySelectorAll('.nav-tab')[0]);
+      switchView('table');
+      
+      // Update subtitle before print
+      const label = document.getElementById('plan-label').value || 'Minggu Ini';
+      const goal = document.getElementById('plan-goal').value || 'Pola Makan Teratur';
+      document.getElementById('print-subtitle').textContent = `Periode: ${label} | Fokus: ${goal}`;
+
+      setTimeout(() => {
+        window.print();
+      }, 150);
+    }
+
+    // --- BACKUP & RESTORE (JSON) ---
+    function exportDataJSON() {
+      const backupObj = {
+        app: 'MealPlanPro',
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        planner: plannerData,
+        groceries: groceryData,
+        meta: metaData
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `MealPlan_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+
+      showToast('📥 File cadangan JSON berhasil diunduh!');
+    }
+
+    function importDataJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.planner && typeof parsed.planner === 'object') {
+            plannerData = parsed.planner;
+            groceryData = Array.isArray(parsed.groceries) ? parsed.groceries : [];
+            metaData = parsed.meta || { label: '', goal: '' };
+
+            document.getElementById('plan-label').value = metaData.label || '';
+            document.getElementById('plan-goal').value = metaData.goal || '';
+
+            renderPlannerTable();
+            renderPlannerCards();
+            renderGroceries();
+            autoSave();
+
+            showToast('✅ Data berhasil dipulihkan dari file!');
+          } else {
+            alert('Format file cadangan tidak valid.');
+          }
+        } catch (err) {
+          alert('Gagal membaca file JSON. Pastikan file tidak rusak.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = ''; // Reset input
+    }
+
+    function resetAllAppData() {
+      if (confirm('PERINGATAN: Seluruh jadwal menu dan daftar belanja akan dihapus permanen. Lanjutkan?')) {
+        try {
+          localStorage.removeItem(STORAGE_KEY_PLAN);
+          localStorage.removeItem(STORAGE_KEY_GROCERY);
+          localStorage.removeItem(STORAGE_KEY_META);
+        } catch (e) {}
+
+        initEmptyPlan();
+        groceryData = [];
+        metaData = { label: '', goal: '' };
+        document.getElementById('plan-label').value = '';
+        document.getElementById('plan-goal').value = '';
+
+        renderPlannerTable();
+        renderPlannerCards();
+        renderGroceries();
+        showToast('Semua data aplikasi telah direset.');
+      }
+    }
+
+    // --- HELPER TOAST ---
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      if (!toast || !toastMsg) return;
+
+      toastMsg.textContent = msg;
+      toast.classList.add('show');
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
+    }
+
+    // --- STRING ESCAPER ---
+    function escapeHtml(str) {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
